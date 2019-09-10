@@ -32,9 +32,8 @@ public class MainActivity extends AppCompatActivity
     private Button reset;
     private boolean pause;
     private Chronometer timer;
-
-
-
+    private long base = 0;
+    private long newBase = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -96,7 +95,20 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
+                if(base == 0)
+                {
+                    timer.setBase(SystemClock.elapsedRealtime());
+                }
+                else
+                {
+                    newBase = SystemClock.elapsedRealtime() - timer.getBase();
+
+                    timer.setBase(base - newBase);
+                }
+
+
                 timer.start();
+
 
             }
         });
@@ -106,6 +118,10 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 timer.stop();
+                base = SystemClock.elapsedRealtime() - timer.getBase();
+
+
+
 
             }
         });
@@ -115,7 +131,10 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 timer.setBase(SystemClock.elapsedRealtime());
+                base = timer.getBase();
+
                 timer.stop();
+
 
 
             }

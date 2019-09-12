@@ -1,8 +1,10 @@
 package com.example.stopwatch;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
@@ -30,10 +32,14 @@ public class MainActivity extends AppCompatActivity
     private Button start;
     private Button stop;
     private Button reset;
-    private boolean pause;
+    private boolean isStart = false;
+    private boolean running = false;
     private Chronometer timer;
     private long base = 0;
-    private long newBase = 0;
+    private long pauseTime = 0;
+    private long newTime = 0;
+    public static final String KEY_CHRONOMETER_BASE = "chronometer base";
+    public static final String KEY_CHRONOMETER_RUNNING = "chronometer running";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -44,7 +50,9 @@ public class MainActivity extends AppCompatActivity
         stop = findViewById(R.id.button_stop_main);
         reset = findViewById(R.id.button_reset_main);
         timer = findViewById(R.id.chronometer_timer_main);
-        pause = true;
+
+
+
 
 
 
@@ -52,6 +60,22 @@ public class MainActivity extends AppCompatActivity
 
         setListener();
         Log.d(TAG, "onCreate: ");
+
+
+        if(savedInstanceState != null)
+        {
+            if(savedInstanceState.getBoolean(KEY_CHRONOMETER_RUNNING))
+            {
+                timer.setBase(savedInstanceState.getLong(KEY_CHRONOMETER_BASE));
+                timer.start();
+            }
+            else
+            {
+                timer.setBase(savedInstanceState.getLong(KEY_CHRONOMETER_BASE));
+
+            }
+
+        }
         
 
     }
@@ -88,22 +112,40 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "onDestroy: ");
     }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong("chronometer base", timer.getBase());
+        if(running)
+        {
+            outState.putBoolean("chronometer running", true);
+        }
+        else
+        {
+            outState.putBoolean("chronometer running", false);
+        }
+
+    }
+
     private void setListener()
     {
+        running = true;
         start.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                if(base == 0)
+                if(!isStart)
                 {
                     timer.setBase(SystemClock.elapsedRealtime());
+                    isStart = true;
                 }
                 else
                 {
-                    newBase = SystemClock.elapsedRealtime() - timer.getBase();
 
-                    timer.setBase(base - newBase);
+                    newTime = SystemClock.elapsedRealtime();
+
+                    timer.setBase(base + (newTime - pauseTime));
                 }
 
 
@@ -118,7 +160,10 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 timer.stop();
-                base = SystemClock.elapsedRealtime() - timer.getBase();
+                running = false;
+
+                pauseTime = SystemClock.elapsedRealtime();
+                base = timer.getBase();
 
 
 
@@ -131,7 +176,9 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view)
             {
                 timer.setBase(SystemClock.elapsedRealtime());
-                base = timer.getBase();
+                isStart = false;
+
+                running = false;
 
                 timer.stop();
 

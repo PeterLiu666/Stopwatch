@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity
     private long newTime = 0;
     public static final String KEY_CHRONOMETER_BASE = "chronometer base";
     public static final String KEY_CHRONOMETER_RUNNING = "chronometer running";
+    public static final String KEY_CHRONOMETER_PAUSE = "chronometer pause";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -66,12 +67,16 @@ public class MainActivity extends AppCompatActivity
         {
             if(savedInstanceState.getBoolean(KEY_CHRONOMETER_RUNNING))
             {
-                timer.setBase(savedInstanceState.getLong(KEY_CHRONOMETER_BASE));
+                newTime = SystemClock.elapsedRealtime();
+                timer.setBase(savedInstanceState.getLong(KEY_CHRONOMETER_BASE) + (newTime - savedInstanceState.getLong(KEY_CHRONOMETER_PAUSE)));
                 timer.start();
+                isStart = true;
             }
             else
             {
-                timer.setBase(savedInstanceState.getLong(KEY_CHRONOMETER_BASE));
+                newTime = SystemClock.elapsedRealtime();
+                timer.setBase(savedInstanceState.getLong(KEY_CHRONOMETER_BASE) + (newTime - savedInstanceState.getLong(KEY_CHRONOMETER_PAUSE)));
+                isStart = false;
 
             }
 
@@ -116,6 +121,7 @@ public class MainActivity extends AppCompatActivity
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putLong("chronometer base", timer.getBase());
+        outState.putLong("chronometer pause", SystemClock.elapsedRealtime());
         if(running)
         {
             outState.putBoolean("chronometer running", true);
